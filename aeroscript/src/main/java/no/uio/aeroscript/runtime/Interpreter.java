@@ -6,6 +6,11 @@ import no.uio.aeroscript.ast.expr.Node;
 import no.uio.aeroscript.ast.expr.NumberNode;
 import no.uio.aeroscript.ast.expr.OperationNode;
 import no.uio.aeroscript.ast.stmt.Statement;
+import no.uio.aeroscript.ast.stmt.acAscend;
+import no.uio.aeroscript.ast.stmt.acDescend;
+import no.uio.aeroscript.ast.stmt.acDock;
+import no.uio.aeroscript.ast.stmt.acMove;
+import no.uio.aeroscript.ast.stmt.acTurn;
 import no.uio.aeroscript.type.Memory;
 import no.uio.aeroscript.type.Point;
 import no.uio.aeroscript.type.Range;
@@ -29,17 +34,30 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
 
     public float getDistanceTravelled() {
         // Implement this method that returns the actual distance travelled from the variables
-        return 1;
+        HashMap<String, Object> vars = (HashMap<String, Object>) heap.get(Memory.VARIABLES);
+        float distanceTravelled = (Float) vars.get("distance travelled");
+
+        return distanceTravelled;
     }
 
     public float getBatteryLevel() {
         // Implement this method that returns the actual battery level from the variables
-        return 1;
+        HashMap<String, Object> vars = (HashMap<String, Object>) heap.get(Memory.VARIABLES);
+        float batteryLevel = (Float) vars.get("battery level");
+
+        return batteryLevel;
     }
 
     private void checkBattery() {
         // Implement this method that checks the battery level and triggers the reaction if the battery level is low
-        return ;
+        HashMap<String, Object> vars = (HashMap<String, Object>) heap.get(Memory.VARIABLES); 
+        float batteryLevel = (Float) vars.get("battery level");
+
+        if (batteryLevel < 20) {
+            vars.put("battery low", true);
+            System.out.println("Battery low!");
+            // Trigger emergency landing (descend to ground)
+        }
     }
 
     @Override
@@ -57,6 +75,37 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
         return null;
     }
 
+    @Override
+    public Object visitAction(AeroScriptParser.ActionContext ctx) {
+        if (ctx.acDock() != null) {
+            return new acDock(heap);
+        }
+        else if (ctx.acAscend() != null) {
+            return new acAscend(heap, (Node) visit(ctx.acAscend().expression()));
+        }
+        else if (ctx.acDescend() != null){
+            if (ctx.acDescend().DESCEND() != null) {
+                return new acDescend(heap, (Node) visit(ctx.acDescend().expression()));
+            }
+            else {
+                return new acDescend(heap);
+            }
+        }
+        else if (ctx.acMove() != null) {
+            if (ctx.acMove().POINT() != null) { 
+                return new acMove(heap, (Point) visit(ctx.acMove().point()));
+            }
+            else {
+                return new acMove(heap, (Node) visit(ctx.acMove().NUMBER()));
+            }
+        }
+        else if (ctx.acTurn() != null) {
+            return new acTurn(heap, (Node) visit(ctx.acTurn().expression()));
+        }
+        throw new IllegalArgumentException("Invalid operation!");
+    }
+
+    
     @Override
     public Object visitPoint(AeroScriptParser.PointContext ctx) {
         Node xNode = (Node) visit(ctx.expression(0));

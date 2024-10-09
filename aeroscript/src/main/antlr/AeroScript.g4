@@ -55,7 +55,7 @@ ID: [a-zA-Z_]+; // Allow underscore in ID
 NUMBER: '-'?[0-9]+('.'[0-9]+)?;
 
 // Entry point
-program  : execution; 
+program  : execution+; 
 execution: NEXT? ID LCURL (action | reaction | execution)* RCURL (NEXT ID)?;
 
 // Statements
@@ -66,7 +66,7 @@ event   : OBSTACLE | BATTERY | MESSAGE LSQUARE ID RSQUARE;
 action  :   (acDock | acMove | acTurn | acAscend | acDescend) 
             (FOR expression S | SPEED expression)?;
 acDock : RETURN;
-acMove : MOVE (TO | BY) POINT point;
+acMove : MOVE (TO POINT point | BY NUMBER);
 acTurn : TURN (RIGHT | LEFT) BY expression;
 acAscend: ASCEND expression;
 acDescend: DESCEND expression | GROUND;

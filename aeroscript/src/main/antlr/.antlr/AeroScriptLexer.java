@@ -1,4 +1,4 @@
-// Generated from c:/Users/USER/OneDrive/Documents/CS/UiO/IN2130/Oblig 2/aeroscript/src/main/antlr/AeroScript.g4 by ANTLR 4.13.1
+// Generated from c:/Users/USER/OneDrive/Documents/CS/UiO/IN2130/Oblig 2/DSL/aeroscript/src/main/antlr/AeroScript.g4 by ANTLR 4.13.1
 
 package no.uio.aeroscript.antlr;
 
