@@ -4,8 +4,8 @@ import no.uio.aeroscript.ast.expr.*;
 import no.uio.aeroscript.type.Memory;
 
 public class acTurn extends Statement {
-    HashMap<Memory, Object> heap;
-    Node node;
+    private HashMap<Memory, Object> heap;
+    private Node node;
 
     public acTurn(HashMap<Memory, Object> heap, Node node) {
         this.heap = heap;
@@ -25,6 +25,6 @@ public class acTurn extends Statement {
     }
 
     public double turnCost(float angle) {
-        return turnCost(angle, 0.0f, 0.0f);  
+        return turnCost(angle, 0.0f, 0.0f);
     }
 }

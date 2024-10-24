@@ -4,8 +4,8 @@ import no.uio.aeroscript.ast.expr.*;
 import no.uio.aeroscript.type.Memory;
 
 public class acDescend extends Statement {
-    HashMap<Memory, Object> heap;
-    Node node;
+    private HashMap<Memory, Object> heap;
+    private Node node;
 
     public acDescend(HashMap<Memory, Object> heap, Node node) {
         this.heap = heap;

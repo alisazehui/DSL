@@ -5,9 +5,9 @@ import no.uio.aeroscript.type.Memory;
 import no.uio.aeroscript.type.Point;
 
 public class acMove extends Statement {
-    HashMap<Memory, Object> heap;
-    Node node;
-    Point point;
+    private HashMap<Memory, Object> heap;
+    private Node node;
+    private Point point;
 
     public acMove(HashMap<Memory, Object> heap, Point point) {
         this.heap = heap;

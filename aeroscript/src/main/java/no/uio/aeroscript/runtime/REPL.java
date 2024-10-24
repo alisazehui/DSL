@@ -1,6 +1,6 @@
 package no.uio.aeroscript.runtime;
 
-//import no.uio.aeroscript.ast.stmt.Execution;
+import no.uio.aeroscript.ast.stmt.Execution;
 import no.uio.aeroscript.type.Memory;
 
 import java.time.Duration;
@@ -11,7 +11,7 @@ import java.util.Objects;
 import java.util.function.Function;
 
 // Uncomment the following code for the REPL after implementing the execution and the rest of the code
-/*
+
 class Command {
     private final String name;
     private final REPL repl;
@@ -138,4 +138,4 @@ public class REPL {
         System.out.println("Terminating the REPL");
         this.terminating = true;
     }
-}*/
+}

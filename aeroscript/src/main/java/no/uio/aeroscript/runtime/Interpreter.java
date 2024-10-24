@@ -5,6 +5,8 @@ import no.uio.aeroscript.antlr.AeroScriptParser;
 import no.uio.aeroscript.ast.expr.Node;
 import no.uio.aeroscript.ast.expr.NumberNode;
 import no.uio.aeroscript.ast.expr.OperationNode;
+import no.uio.aeroscript.ast.stmt.Execution;
+import no.uio.aeroscript.ast.stmt.Reaction;
 import no.uio.aeroscript.ast.stmt.Statement;
 import no.uio.aeroscript.ast.stmt.acAscend;
 import no.uio.aeroscript.ast.stmt.acDescend;
@@ -17,13 +19,17 @@ import no.uio.aeroscript.type.Range;
 
 import java.util.*;
 
+import org.stringtemplate.v4.ST;
+
 public class Interpreter extends AeroScriptBaseVisitor<Object> {
     private final HashMap<Memory, Object> heap;
     private final Stack<Statement> stack;
+    private final HashMap<String, Runnable> listeners;
 
     public Interpreter(HashMap<Memory, Object> heap, Stack<Statement> stack) {
         this.heap = heap;
         this.stack = stack;
+        this.listeners = new HashMap<String, Runnable>();
     }
 
     public Point getPosition() {
@@ -55,26 +61,69 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
 
         if (batteryLevel < 20) {
             vars.put("battery low", true);
-            System.out.println("Battery low!");
-            // Trigger emergency landing (descend to ground)
+            System.out.println("Battery low! Initiating emergency landing...");
+
+            listeners.get("low battery").run();
         }
+    }
+
+    public HashMap<String, Runnable> getListeners() {
+        return this.listeners;
+    }
+
+    public Execution getFirstExecution() {
+        for (Statement statement : stack) {
+            if (statement instanceof Execution) {
+                return (Execution) statement;
+            }
+        }
+        return null;
     }
 
     @Override
     public Object visitProgram(AeroScriptParser.ProgramContext ctx) {
-        return null;
+        // går gjennom alle executions og kaller på visitExecution
+        // rapporten skal si hvordan vi implementerte hele programmet
+        for (AeroScriptParser.ExecutionContext executionContext : ctx.execution()) {
+            Execution execution = (Execution) visitExecution(executionContext);
+            // Push the execution to the stack if it's valid
+            if (execution != null) {
+                stack.push(execution);
+            }
+        }
+        return new Program(heap, stack);
     }
 
     @Override
     public Object visitExecution(AeroScriptParser.ExecutionContext ctx) {
-        return null;
+        // går gjennom execution uttrykk som mission control, som går gjennom statements innenfor der. 
+        String id = ctx.ID(0).getText();
+        List<Object> statement = new ArrayList<>();
+        Map<String, Object> execution_table = (Map<String, Object>) heap.get(Memory.EXECUTION_TABLE);
+
+        for(AeroScriptParser.StatementContext statements : ctx.statement()) {
+            statement.add(visitStatement(statements));
+        }
+
+        Execution execution = new Execution(statement, heap, listeners);
+        execution_table.put(id, execution);
+
+        return execution;
     }
 
     @Override
     public Object visitStatement(AeroScriptParser.StatementContext ctx) {
-        return null;
+        if (ctx.action() != null) {
+            return visitAction(ctx.action());
+        } else if (ctx.execution() != null) {
+            return visitExecution(ctx.execution());
+        }
+        else if (ctx.reaction() != null) {
+            return visitReaction(ctx.reaction());
+        }
+        throw new IllegalArgumentException("Invalid statement!");
     }
-
+ 
     @Override
     public Object visitAction(AeroScriptParser.ActionContext ctx) {
         if (ctx.acDock() != null) {
@@ -102,10 +151,27 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
         else if (ctx.acTurn() != null) {
             return new acTurn(heap, (Node) visit(ctx.acTurn().expression()));
         }
-        throw new IllegalArgumentException("Invalid operation!");
+        throw new IllegalArgumentException("Invalid action!");
     }
 
-    
+    @Override
+    public Object visitReaction(AeroScriptParser.ReactionContext ctx) {
+        String message = "";
+        String id = ctx.ID().getText();
+
+        if (ctx.event().MESSAGE() != null) {
+            message = ctx.event().ID().getText();           // message ID, e.g. launch
+            HashMap<String, String> messages = (HashMap<String, String>) heap.get(Memory.MESSAGES);
+            messages.put(message, id);
+        } else {
+            message = ctx.event().getText();                // obstacle, low battery
+            HashMap<String, String> reactions = (HashMap<String, String>) heap.get(Memory.REACTIONS);
+            reactions.put(message, id);
+        }
+
+        return new Reaction(listeners, heap, message, id);
+    }
+
     @Override
     public Object visitPoint(AeroScriptParser.PointContext ctx) {
         Node xNode = (Node) visit(ctx.expression(0));

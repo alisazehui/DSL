@@ -55,11 +55,11 @@ ID: [a-zA-Z_]+; // Allow underscore in ID
 NUMBER: '-'?[0-9]+('.'[0-9]+)?;
 
 // Entry point
-program  : execution+; 
-execution: NEXT? ID LCURL (action | reaction | execution)* RCURL (NEXT ID)?;
+program  : (execution)+; 
+execution: NEXT? ID LCURL (statement)* RCURL (NEXT ID)?;
 
 // Statements
-statement : reaction | event | action ; 
+statement : action | reaction | execution; 
 reaction : ON event NEXT ID;
 event   : OBSTACLE | BATTERY | MESSAGE LSQUARE ID RSQUARE;
     
@@ -80,4 +80,3 @@ expression : expression (PLUS | MINUS | TIMES) expression |
 
 point : LPAREN expression COMMA expression RPAREN;
 range : LSQUARE expression COMMA expression RSQUARE;
-

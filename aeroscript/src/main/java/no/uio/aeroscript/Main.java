@@ -3,9 +3,14 @@ package no.uio.aeroscript;
 import no.uio.aeroscript.antlr.AeroScriptLexer;
 import no.uio.aeroscript.antlr.AeroScriptParser;
 import no.uio.aeroscript.runtime.Interpreter;
+import no.uio.aeroscript.runtime.REPL;
 import no.uio.aeroscript.type.Memory;
 import no.uio.aeroscript.type.Point;
 import no.uio.aeroscript.ast.stmt.Statement;
+import no.uio.aeroscript.ast.stmt.Execution;
+import no.uio.aeroscript.ast.stmt.Reaction;
+
+import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.jline.reader.LineReader;
@@ -14,8 +19,7 @@ import org.jline.reader.LineReaderBuilder;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Stack;
+import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
@@ -57,19 +61,35 @@ public class Main {
 
         vars.put("initial position", initialPosition);
         vars.put("current position", initialPosition);
+
         // Add all other variables required by the stack
+        vars.put("altitude", initialZ);
+        vars.put("initial battery level", batteryLevel);
+        vars.put("battery level", batteryLevel);
+        vars.put("battery low", false);
+        vars.put("distance travelled", 0.0f);
+        vars.put("initial execution", null);
         // Hint: if you add a separate variable to check if the battery level is low, you can add a listener to trigger
         // the reaction
 
         heap.put(Memory.EXECUTION_TABLE, new HashMap<>());
         heap.put(Memory.REACTIONS, new HashMap<>());
         heap.put(Memory.MESSAGES, new HashMap<>());
-        heap.put(Memory.VARIABLES, vars);
-
+        heap.put(Memory.VARIABLES, vars);  
+        
         try {
             // Read all bytes of the file for parsing using the interpreter.
+            Interpreter interpreter = new Interpreter(heap, stack);
+            var content = new String(Files.readAllBytes(Paths.get(path)));
 
-            /*
+            AeroScriptLexer lexer = new AeroScriptLexer(CharStreams.fromString(content));
+            CommonTokenStream tokens = new CommonTokenStream(lexer);
+            AeroScriptParser parser = new AeroScriptParser(tokens);
+            AeroScriptParser.ProgramContext programContext = parser.program();
+
+            interpreter.visitProgram(programContext);
+            System.out.println("Main Stack: " + stack);
+
             // Uncomment this block to enable the REPL
             // If you want to use listeners, you can see the REPL class for an example of how to implement them
             // If you want to use a different implementation, change the REPL accordingly
@@ -90,9 +110,13 @@ public class Main {
                     left = splits.length == 1 ? "" : splits[1].trim();
                 } while (!repl.command(splits[0], left));
             }
-            */
+            
 
             // Print the initial position, initial battery capacity, final position, final battery level and distance travelled here
+            System.out.println("Initial position: " + vars.get("initial position"));
+            System.out.println("Initial battery level: " + vars.get("initial battery level"));
+            System.out.println("Final battery level: " + vars.get("battery level"));
+            System.out.println("Distance travelled: " + vars.get("distance travelled"));
 
             System.out.println("Execution complete!");
         } catch (/*IOException e*/Exception e) {
