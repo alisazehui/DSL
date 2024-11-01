@@ -21,31 +21,35 @@ public class acDescend extends Statement {
         if (node != null) {
             float exp = (float) node.evaluate();
             HashMap<String, Object> vars = (HashMap<String, Object>) heap.get(Memory.VARIABLES);
-            float oldAlt = (float) vars.get("altitude");
-            float distance = (float) vars.get("distance travelled");
-            float battery = (float) vars.get("battery level");
+            float oldAlt = ((Number) vars.get("altitude")).floatValue();
+            float distance = ((Number) vars.get("distance travelled")).floatValue();
+            float battery = ((Number) vars.get("battery level")).floatValue();
 
             vars.put("altitude", (oldAlt - exp));
             vars.put("distance travelled", (distance + exp));
             vars.put("battery level", (battery - descendCost(exp)));
+            System.out.println("Descending by " + exp);
+            System.out.println("Battery level: " + vars.get("battery level"));   
         }
         else {
             HashMap<String, Object> vars = (HashMap<String, Object>) heap.get(Memory.VARIABLES);
-            float distance = (float) vars.get("distance travelled");
-            float battery = (float) vars.get("battery level");
-            float altitude = (float) vars.get("altitude");
+            float altitude = ((Number) vars.get("altitude")).floatValue();
+            float distance = ((Number) vars.get("distance travelled")).floatValue();
+            float battery = ((Number) vars.get("battery level")).floatValue();
 
             vars.put("altitude", 0);
             vars.put("distance travelled", (distance + altitude));
             vars.put("battery level", (battery - descendCost(altitude)));
+            System.out.println("Descending to ground, by altitude: " + altitude);
+            System.out.println("Battery level: " + vars.get("battery level"));   
         }
     }
 
-    public double descendCost(float dist, float time, float speed) {
-        return dist * 0.6 + (time * 0.1) + (speed * 1);
+    public float descendCost(float dist, float time, float speed) {
+        return dist * 0.6f + (time * 0.1f) + (speed * 1.0f);
     }
 
-    public double descendCost(float dist) {
+    public float descendCost(float dist) {
         return descendCost(dist, 0.0f, 0.0f);  
     }
 }

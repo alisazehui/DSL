@@ -24,14 +24,14 @@ public class acMove extends Statement {
         HashMap<String, Object> vars = (HashMap<String, Object>) heap.get(Memory.VARIABLES);
 
         if (point != null) {
-            float distance = (float) vars.get("distance travelled");
-            float battery = (float) vars.get("battery level");
+            float distance = ((Number) vars.get("distance travelled")).floatValue();
+            float battery = ((Number) vars.get("battery level")).floatValue();
             Point current = (Point) vars.get("current position");
             float x1 = current.getX();
             float y1 = current.getY();
             float x2 = point.getX();
             float y2 = point.getY();
-
+ 
             float dx = x2 - x1;
             float dy = y2 - y1;
             float exp = (float) Math.sqrt(dx * dx + dy * dy);
@@ -39,10 +39,11 @@ public class acMove extends Statement {
             vars.put("current position", point);
             vars.put("distance travelled", (distance + exp));
             vars.put("battery level", (battery - moveCostPoint(exp)));
-        }
-        else {
-            float distance = (float) vars.get("distance travelled");
-            float battery = (float) vars.get("battery level");
+            System.out.println("Move to point (" + point.getX() + ", " + point.getY() + ")");
+            System.out.println("Battery level: " + vars.get("battery level"));        
+        } else {
+            float distance = ((Number) vars.get("distance travelled")).floatValue();
+            float battery = ((Number) vars.get("battery level")).floatValue();
             Point current = (Point) vars.get("current position");
             float exp = (float) node.evaluate();
 
@@ -54,22 +55,24 @@ public class acMove extends Statement {
             vars.put("current position", newPoint);
             vars.put("distance travelled", (distance + exp));
             vars.put("battery level", (battery - moveCostN(exp)));
+            System.out.println("Move to point (" + newPoint.getX() + ", " + newPoint.getY() + ")");
+            System.out.println("Battery level: " + vars.get("battery level"));   
         }
     }
 
-    public double moveCostPoint(float dist, float time, float speed) {
-        return dist * 0.7 + (time * 0.1) + (speed * 1);
+    public float moveCostPoint(float dist, float time, float speed) {
+        return dist * 0.7f + (time * 0.1f) + (speed * 1.0f);
     }
 
-    public double moveCostPoint(float dist) {
+    public float moveCostPoint(float dist) {
         return moveCostPoint(dist, 0.0f, 0.0f);  
     }
 
-    public double moveCostN(float dist, float time, float speed) {
-        return dist * 0.5 + (time * 0.1) + (speed * 1);
+    public float moveCostN(float dist, float time, float speed) {
+        return dist * 0.5f + (time * 0.1f) + (speed * 1.0f);
     }
 
-    public double moveCostN(float dist) {
+    public float moveCostN(float dist) {
         return moveCostN(dist, 0.0f, 0.0f);  
     }
 }

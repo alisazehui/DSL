@@ -13,17 +13,19 @@ public class acDock extends Statement {
     @Override
     public void execute() {
         HashMap<String, Object> vars = (HashMap<String, Object>) heap.get(Memory.VARIABLES);
-        float altitude = (float) vars.get("altitude");
-        float battery = (float) vars.get("battery level");
+        float altitude = ((Number) vars.get("altitude")).floatValue();
+        float battery = ((Number) vars.get("battery level")).floatValue();
         vars.put("battery level", (battery - dockCost(altitude)));
         vars.put("current position", vars.get("initial position"));
+        System.out.println("Dock");
+        System.out.println("Battery level: " + vars.get("battery level"));   
     }
 
-    public double dockCost(float altitude, float time, float speed) {
-        return altitude + (time * 0.1) + (speed * 1);
+    public float dockCost(float altitude, float time, float speed) {
+        return altitude + (time * 0.1f) + (speed * 1.0f);
     }
 
-    public double dockCost(float altitude) {
+    public float dockCost(float altitude) {
         return dockCost(altitude, 0.0f, 0.0f);  
     }
 }

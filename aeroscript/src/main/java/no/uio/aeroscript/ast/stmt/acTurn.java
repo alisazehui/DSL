@@ -15,16 +15,16 @@ public class acTurn extends Statement {
     @Override
     public void execute() {
         HashMap<String, Object> vars = (HashMap<String, Object>) heap.get(Memory.VARIABLES);
-        float battery = (float) vars.get("battery level");
+        float battery = ((Number) vars.get("battery level")).floatValue();
         float exp = (float) node.evaluate();
         vars.put("battery level", (battery - turnCost((exp))));
     }
 
-    public double turnCost(float angle, float time, float speed) {
-        return angle * 0.3 + (time * 0.1) + (speed * 1);
+    public float turnCost(float angle, float time, float speed) {
+        return angle * 0.3f + (time * 0.1f) + (speed * 1.0f);
     }
 
-    public double turnCost(float angle) {
+    public float turnCost(float angle) {
         return turnCost(angle, 0.0f, 0.0f);
     }
 }

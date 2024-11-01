@@ -54,7 +54,7 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
         return batteryLevel;
     }
 
-    private void checkBattery() {
+    public void checkBattery() {
         // Implement this method that checks the battery level and triggers the reaction if the battery level is low
         HashMap<String, Object> vars = (HashMap<String, Object>) heap.get(Memory.VARIABLES); 
         float batteryLevel = (Float) vars.get("battery level");
@@ -63,7 +63,11 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
             vars.put("battery low", true);
             System.out.println("Battery low! Initiating emergency landing...");
 
-            listeners.get("low battery").run();
+            acDescend emergencyLandingAction = new acDescend(heap);
+            emergencyLandingAction.execute();  
+
+            System.out.println("Emergency landing completed. Exiting program.");
+            System.exit(0);  
         }
     }
 
@@ -106,7 +110,13 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
         }
 
         Execution execution = new Execution(statement, heap, listeners);
-        execution_table.put(id, execution);
+
+        Execution previousExecution = (Execution) execution_table.get("previousExecution");
+        if (previousExecution != null) {
+            previousExecution.setNextExecution(execution);
+        }
+        execution_table.put("previousExecution", execution);  
+        execution_table.put(id, execution); 
 
         return execution;
     }
@@ -127,31 +137,68 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
     @Override
     public Object visitAction(AeroScriptParser.ActionContext ctx) {
         if (ctx.acDock() != null) {
-            return new acDock(heap);
+            return visitAcDock(ctx.acDock());
         }
         else if (ctx.acAscend() != null) {
-            return new acAscend(heap, (Node) visit(ctx.acAscend().expression()));
+            return visitAcAscend(ctx.acAscend());
         }
         else if (ctx.acDescend() != null){
-            if (ctx.acDescend().DESCEND() != null) {
-                return new acDescend(heap, (Node) visit(ctx.acDescend().expression()));
-            }
-            else {
-                return new acDescend(heap);
-            }
+            return visitAcDescend(ctx.acDescend());
         }
         else if (ctx.acMove() != null) {
-            if (ctx.acMove().POINT() != null) { 
-                return new acMove(heap, (Point) visit(ctx.acMove().point()));
-            }
-            else {
-                return new acMove(heap, (Node) visit(ctx.acMove().NUMBER()));
-            }
+            return visitAcMove(ctx.acMove());
         }
         else if (ctx.acTurn() != null) {
-            return new acTurn(heap, (Node) visit(ctx.acTurn().expression()));
+            return visitAcTurn(ctx.acTurn());
         }
         throw new IllegalArgumentException("Invalid action!");
+    }
+
+    @Override
+    public Object visitAcDock(AeroScriptParser.AcDockContext ctx) {
+        acDock action = new acDock(heap);
+        checkBattery();
+        return action;
+    }
+
+    @Override
+    public Object visitAcAscend(AeroScriptParser.AcAscendContext ctx) {
+        acAscend action = new acAscend(heap, (Node) visit(ctx.expression()));
+        checkBattery();
+        return action;
+    }
+
+    @Override 
+    public Object visitAcDescend(AeroScriptParser.AcDescendContext ctx) {
+        acDescend action;
+        if (ctx.DESCEND() != null) {
+            action = new acDescend(heap, (Node) visit(ctx.expression()));
+        }
+        else {
+            action = new acDescend(heap);
+        }
+        checkBattery();
+        return action;
+    }
+
+    @Override
+    public Object visitAcMove(AeroScriptParser.AcMoveContext ctx) {
+        acMove action;
+        if (ctx.POINT() != null) { 
+            action = new acMove(heap, (Point) visit(ctx.point()));
+        }
+        else {
+            action = new acMove(heap, (Node) visit(ctx.NUMBER()));
+        }
+        checkBattery();
+        return action;
+    }
+
+    @Override
+    public Object visitAcTurn(AeroScriptParser.AcTurnContext ctx) {
+        acTurn action = new acTurn(heap, (Node) visit(ctx.expression()));
+        checkBattery();
+        return action;
     }
 
     @Override
@@ -168,8 +215,9 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
             HashMap<String, String> reactions = (HashMap<String, String>) heap.get(Memory.REACTIONS);
             reactions.put(message, id);
         }
+        Reaction reaction = new Reaction(listeners, heap, message, id);
 
-        return new Reaction(listeners, heap, message, id);
+        return reaction;
     }
 
     @Override
@@ -237,4 +285,4 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
         }
         return new NumberNode(Float.parseFloat(ctx.NUMBER().getText()));
     }
-}
+} 

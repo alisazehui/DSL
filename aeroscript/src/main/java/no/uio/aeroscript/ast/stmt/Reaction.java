@@ -14,37 +14,31 @@ public class Reaction extends Statement{
         this.heap = heap;
         this.message = message;
         this.id = id;
-        execute();
+        addListener();
+    }
+
+    public void addListener() {
+        HashMap<String, Object> executionTable = (HashMap<String, Object>) heap.get(Memory.EXECUTION_TABLE);
+        HashMap<String, String> messageAuthentication = (HashMap<String, String>) heap.get(Memory.MESSAGES);
+        
+        listeners.put(message, () -> {
+            if (messageAuthentication.containsKey(message) && "true".equals(messageAuthentication.get(message))) {
+                System.out.println("Listener triggered for message: " + message);
+
+                Execution execution = (Execution) executionTable.get(id);
+                if (execution != null) {
+                    execution.execute();
+                } else {
+                    System.out.println("Execution not found for message: " + message);
+                }
+            }
+        });
     }
 
     @Override
     public void execute(){  
         HashMap<String, Object> executionTable = (HashMap<String, Object>) heap.get(Memory.EXECUTION_TABLE);
-        HashMap<String, Boolean> messageAuthentication = (HashMap<String, Boolean>) heap.get(Memory.MESSAGES);
-
-        if (messageAuthentication.containsKey(message) && messageAuthentication.get(message)) {
-            // Use heap to check if the message is authentic
-            listeners.put(message, () -> {
-                Execution execution = (Execution) executionTable.get(id);
-                if (execution != null) {
-                    execution.receiveMessage(message);
-                } else {
-                    System.out.println("Execution not found for message: " + message);
-                }
-            });
-
-        // Predefined listeners
-        listeners.put("low battery", () -> {
-            System.out.println("Low battery detected! Initiating emergency landing...");
-            Execution execution = (Execution) executionTable.get(id);
-            execution.receiveMessage("low battery");
-        });
-
-        listeners.put("launch", () -> {
-            System.out.println("Launch command received.");
-            Execution execution = (Execution) executionTable.get(id);
-            execution.receiveMessage("launch");
-        });
-        }
+        Execution execution = (Execution) executionTable.get(this.id);
+        execution.receiveMessage(message);
     }
 }

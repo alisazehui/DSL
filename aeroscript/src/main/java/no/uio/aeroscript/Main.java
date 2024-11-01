@@ -23,6 +23,7 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
+        HashMap<String, Runnable> listeners = new HashMap<>();
         HashMap<Memory, Object> heap = new HashMap<>();
         Stack<Statement> stack = new Stack<>();
         float batteryLevel;
@@ -76,7 +77,7 @@ public class Main {
         heap.put(Memory.REACTIONS, new HashMap<>());
         heap.put(Memory.MESSAGES, new HashMap<>());
         heap.put(Memory.VARIABLES, vars);  
-        
+
         try {
             // Read all bytes of the file for parsing using the interpreter.
             Interpreter interpreter = new Interpreter(heap, stack);
@@ -87,8 +88,7 @@ public class Main {
             AeroScriptParser parser = new AeroScriptParser(tokens);
             AeroScriptParser.ProgramContext programContext = parser.program();
 
-            interpreter.visitProgram(programContext);
-            System.out.println("Main Stack: " + stack);
+	        interpreter.visitProgram(programContext); 	    
 
             // Uncomment this block to enable the REPL
             // If you want to use listeners, you can see the REPL class for an example of how to implement them
@@ -99,7 +99,7 @@ public class Main {
                 System.setProperty("org.jline.terminal", "jline.UnsupportedTerminal");
                 LineReader reader = LineReaderBuilder.builder().build();
                 String next;
-                String left;
+                String left = "start_tour";
                 String[] splits;
                 do {
                     next = reader.readLine("MO> ");
@@ -111,19 +111,17 @@ public class Main {
                 } while (!repl.command(splits[0], left));
             }
             
-
             // Print the initial position, initial battery capacity, final position, final battery level and distance travelled here
-            System.out.println("Initial position: " + vars.get("initial position"));
+            System.out.println("Initial position: (" + initialX + ", " + initialY + ")");
             System.out.println("Initial battery level: " + vars.get("initial battery level"));
             System.out.println("Final battery level: " + vars.get("battery level"));
             System.out.println("Distance travelled: " + vars.get("distance travelled"));
+            Point pos = (Point) vars.get("current position");
+            System.out.println("Final position: (" + pos.getX() + ", " + pos.getY() + ")");
 
             System.out.println("Execution complete!");
-        } catch (/*IOException e*/Exception e) {
+        } catch (IOException e) {
             System.err.println("Error reading file: " + e.getMessage());
         }
-
-
-        System.out.println("Assignment not yet implemented");
     }
 }

@@ -16,20 +16,22 @@ public class acAscend extends Statement {
     public void execute() {
         float exp = (float) node.evaluate();
         HashMap<String, Object> vars = (HashMap<String, Object>) heap.get(Memory.VARIABLES);
-        float oldAlt = (float) vars.get("altitude");
-        float distance = (float) vars.get("distance travelled");
-        float battery = (float) vars.get("battery level");
+        float oldAlt = ((Number) vars.get("altitude")).floatValue();
+        float distance = ((Number) vars.get("distance travelled")).floatValue();
+        float battery = ((Number) vars.get("battery level")).floatValue();
 
         vars.put("altitude", (oldAlt + exp));
         vars.put("distance travelled", (distance + exp));
         vars.put("battery level", (battery - ascendCost(exp)));
+        System.out.println("Ascending by " + exp);
+        System.out.println("Battery level: " + vars.get("battery level"));        
     }
 
-    public double ascendCost(float dist, float time, float speed) {
-        return dist * 0.2 + (time * 0.1) + (speed * 1);
+    public float ascendCost(float dist, float time, float speed) {
+        return dist * 0.2f + (time * 0.1f) + (speed * 1.0f);
     }
 
-    public double ascendCost(float dist) {
+    public float ascendCost(float dist) {
         return ascendCost(dist, 0.0f, 0.0f);  
     }
 }
