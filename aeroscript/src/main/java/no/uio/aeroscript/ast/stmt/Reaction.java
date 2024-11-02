@@ -14,10 +14,10 @@ public class Reaction extends Statement{
         this.heap = heap;
         this.message = message;
         this.id = id;
-        addListener();
+        listener();
     }
 
-    public void addListener() {
+    public void listener() {
         HashMap<String, Object> executionTable = (HashMap<String, Object>) heap.get(Memory.EXECUTION_TABLE);
         HashMap<String, String> messageAuthentication = (HashMap<String, String>) heap.get(Memory.MESSAGES);
         

@@ -20,7 +20,6 @@ public class Execution extends Statement {
     public void receiveMessage(String message) {
         // When you receive a message you need to execute its content
         // Hint: for messages you can use listeners to trigger the execution
-        
         System.out.println("Received message: " + message);
         HashMap<String, Object> messages = (HashMap<String, Object>) heap.get(Memory.MESSAGES);
         if (listeners.containsKey(message)) {
@@ -49,16 +48,17 @@ public class Execution extends Statement {
         executionStack.add(this);
 
 		while (!executionStack.isEmpty()) {
-			Execution currExecution = (Execution) executionStack.pop();
-            if (executedExecutions.contains(currExecution)) {
-                System.out.println("Skipping already executed Execution to avoid an infinite loop: " + currExecution);
+			Execution current = (Execution) executionStack.pop();
+            if (executedExecutions.contains(current)) {
+                System.out.println("Skipping already executed Execution to avoid an infinite loop: " + current);
                 continue;
             }
-            executedExecutions.add(currExecution);
-			for (Object stmt : currExecution.statements) {
+            executedExecutions.add(current);
+			for (Object statements : current.statements) {
                 HashMap<String, Object> vars = (HashMap<String, Object>) heap.get(Memory.VARIABLES); 
                 float batteryLevel = (Float) vars.get("battery level");
                 
+                // Battery check for each action
                 if (batteryLevel < 20) {
                     vars.put("battery low", true);
                     System.out.println("Battery low! Initiating emergency landing...");
@@ -69,11 +69,11 @@ public class Execution extends Statement {
                     System.out.println("Emergency landing completed. Exiting program.");
                     System.exit(0);  
                 }
-                
-                switch (stmt) {
+
+                switch (statements) {
                     case Execution execution -> this.statements.add(execution);
                     case Statement statement -> statement.execute();
-                    default -> System.out.println("stmt is not execution or statement");
+                    default -> System.out.println("Input statement is not an execution or statement");
                 }
             }
 

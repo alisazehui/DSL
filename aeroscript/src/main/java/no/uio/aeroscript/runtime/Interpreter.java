@@ -72,6 +72,16 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
     }
 
     public HashMap<String, Runnable> getListeners() {
+        Map<String, String> reactions = (HashMap<String, String>) heap.get(Memory.MESSAGES);
+		Map<String, Execution> execution = (HashMap<String, Execution>) heap.get(Memory.EXECUTION_TABLE);
+
+		for(String e : listeners.keySet()) {
+			Execution x = execution.get(reactions.get(e));
+			listeners.put(e, () -> {
+					x.execute();
+						});
+		}
+
         return this.listeners;
     }
 
@@ -216,6 +226,7 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
             reactions.put(message, id);
         }
         Reaction reaction = new Reaction(listeners, heap, message, id);
+        listeners.put(message, null);
 
         return reaction;
     }
