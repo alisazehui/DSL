@@ -167,14 +167,12 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
     @Override
     public Object visitAcDock(AeroScriptParser.AcDockContext ctx) {
         acDock action = new acDock(heap);
-        checkBattery();
         return action;
     }
 
     @Override
     public Object visitAcAscend(AeroScriptParser.AcAscendContext ctx) {
         acAscend action = new acAscend(heap, (Node) visit(ctx.expression()));
-        checkBattery();
         return action;
     }
 
@@ -187,7 +185,6 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
         else {
             action = new acDescend(heap);
         }
-        checkBattery();
         return action;
     }
 
@@ -200,14 +197,12 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
         else {
             action = new acMove(heap, (Node) visit(ctx.NUMBER()));
         }
-        checkBattery();
         return action;
     }
 
     @Override
     public Object visitAcTurn(AeroScriptParser.AcTurnContext ctx) {
         acTurn action = new acTurn(heap, (Node) visit(ctx.expression()));
-        checkBattery();
         return action;
     }
 
